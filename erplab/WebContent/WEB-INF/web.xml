@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="WebApp_ID" version="2.5">
+  <display-name>ERP Lab</display-name>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <!-- Define application IOC init configs -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:applicationContext*.xml</param-value>
+	</context-param>
+
+	<servlet>
+		<servlet-name>JSPSupportServlet</servlet-name>
+		<servlet-class>org.apache.struts2.views.JspSupportServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<!-- Define application required filters -->
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+	<filter>
+		<filter-name>entityOSIVFilter</filter-name>
+		<filter-class>org.workin.core.persistence.jpa.OpenEntityManagerInViewFilter</filter-class>
+		<init-param>
+			<param-name>excludeSuffixs</param-name>
+			<param-value>js,css,jpg,gif,png</param-value>
+		</init-param>
+	</filter>
+	<filter>
+		<filter-name>urlRewriteFilter</filter-name>
+		<filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>struts2CleanupFilter</filter-name>
+		<filter-class>org.apache.struts2.dispatcher.ActionContextCleanUp</filter-class>
+	</filter>
+	<filter>
+		<filter-name>struts2Filter</filter-name>
+		<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
+	</filter>
+	<filter>
+		<filter-name>responseHeaderCacheControlFilter</filter-name>
+		<filter-class>org.workin.web.filter.ResponseHeaderCacheControlFilter</filter-class>
+		<init-param>
+			<param-name>expiresSeconds</param-name>
+			<param-value>3000000</param-value>
+		</init-param>
+	</filter>
+	<filter>
+		<filter-name>shallowEtagHeaderFilter</filter-name>
+		<filter-class>org.springframework.web.filter.ShallowEtagHeaderFilter</filter-class>
+	</filter>
+
+	<filter>
+         <filter-name>sitemesh</filter-name>
+         <filter-class>com.opensymphony.sitemesh.webapp.SiteMeshFilter</filter-class>
+    </filter>
+   
+	<!-- For application encoding -->
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- For JPA session management -->
+	<filter-mapping>
+		<filter-name>entityOSIVFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- For URL rewrite -->
+	<filter-mapping>
+		<filter-name>urlRewriteFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<!-- For struts2 -->
+	<filter-mapping>
+		<filter-name>struts2CleanupFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+	
+	<!-- For sitemesh -->
+	<filter-mapping>
+		<filter-name>sitemesh</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- For struts2 -->
+	<filter-mapping>
+		<filter-name>struts2Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<!--
+			If used urlRewriteFilter, then the dispatcher for struts2Filter is
+			required. The reason is due to be found
+		-->
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+
+	<!-- Control response header cache expires time-->
+	<filter-mapping>
+		<filter-name>responseHeaderCacheControlFilter</filter-name>
+		<url-pattern>/images/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>responseHeaderCacheControlFilter</filter-name>
+		<url-pattern>/styles/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>responseHeaderCacheControlFilter</filter-name>
+		<url-pattern>/scripts/*</url-pattern>
+	</filter-mapping>
+
+	<!--
+		Spring Etag(As such, this filter only saves bandwidth, not server
+		performance)
+	-->
+	<filter-mapping>
+		<filter-name>shallowEtagHeaderFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Load Spring ApplicationContext -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<!-- Spring refresh prevent memory leak -->
+	<listener>
+		<listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+	</listener>
+	<!-- SpringSecuirty control session -->
+	<listener>
+		<listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
+	</listener>
+
+	<!-- Set session timeout to management session life cycle -->
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+
+
+	<!--
+		Define Error Page, When Hit Throwable or Response retruen code is 500
+	
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type>
+		<location>/common/500.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/common/500.jsp</location>
+	</error-page>-->
+		
+</web-app>
